@@ -23,7 +23,7 @@ ARG ADD_BUILD_TAGS=""
 RUN make -e ADD_BUILD_TAGS="$ADD_BUILD_TAGS" build
 
 # Next image - Copy built Go binary into new workspace
-FROM alpine:3.21.2
+FROM alpine:3.21.3
 
 # dumb-init needed for injected secure bootstrapping entrypoint script when run in secure mode.
 # upgrade required to patch for open CVEs.
