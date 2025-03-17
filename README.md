@@ -100,25 +100,31 @@ make docker
 
 ### Running with EdgeX Foundry in No-security Mode
 
-Update [docker-compose-no-secty.yml](https://github.com/edgexfoundry/edgex-compose/blob/v3.1/docker-compose-no-secty.yml) with the following service configuration:
+Update [docker-compose-no-secty.yml](https://github.com/edgexfoundry/edgex-compose/blob/v4.0/docker-compose-no-secty.yml) with the following service configuration:
 
 ```yml
 services:
   device-opcua:
     container_name: edgex-device-opcua
     depends_on:
-      consul:
+      core-common-config-bootstrapper:
         condition: service_started
+        required: true
+      core-keeper:
+        condition: service_started
+        required: true
       core-data:
         condition: service_started
+        required: true
       core-metadata:
         condition: service_started
+        required: true
     environment:
       EDGEX_SECURITY_SECRET_STORE: "false"
       SERVICE_HOST: edgex-device-opcua
     hostname: edgex-device-opcua
     # Update image ref if necessary
-    image: edgexfoundry/device-opcua-go:0.0.0-dev 
+    image: edgexfoundry/device-opcua-go:0.0.0-dev
     networks:
       edgex-network: null
     ports:
@@ -143,55 +149,59 @@ services:
 
 ### Running with EdgeX Foundry in Secure Mode
 
-Update [docker-compose.yml](https://github.com/edgexfoundry/edgex-compose/blob/v3.1/docker-compose.yml) with the following configuration changes:
+Update [docker-compose.yml](https://github.com/edgexfoundry/edgex-compose/blob/v4.0/docker-compose.yml) with the following configuration changes:
 
 ```yml
 services:
-  # Update custom proxy route - New for EdgeX Foundry v3.1
+  # Update custom proxy route
   security-proxy-setup:
     environment:
       EDGEX_ADD_PROXY_ROUTE: device-opcua.http://edgex-device-opcua:59997
   # Update known secrets and secretstore tokens
   security-secretstore-setup:
     environment:
-      EDGEX_ADD_KNOWN_SECRETS: redisdb[device-opcua],message-bus[device-opcua]
+      EDGEX_ADD_KNOWN_SECRETS: postgres[device-opcua],message-bus[device-opcua]
       EDGEX_ADD_SECRETSTORE_TOKENS: "device-opcua"
-  # Update custom Consul ACL roles
-  consul:
-    environment:
-      EDGEX_ADD_REGISTRY_ACL_ROLES: "device-opcua"
   # Device service configuration
   device-opcua:
     command:
       - /device-opcua
-      - -cp=consul.http://edgex-core-consul:8500
       - --registry
+      - -cp=keeper.http://edgex-core-keeper:59890
     container_name: edgex-device-opcua
     depends_on:
-      consul:
+      core-common-config-bootstrapper:
         condition: service_started
+        required: true
+      core-keeper:
+        condition: service_started
+        required: true
       core-data:
         condition: service_started
+        required: true
       core-metadata:
         condition: service_started
+        required: true
       security-bootstrapper:
         condition: service_started
+        required: true
     entrypoint:
       - /edgex-init/ready_to_run_wait_install.sh
     environment:
+      CLIENTS_SECURITY_SECRETSTORE_SETUP_HOST: edgex-security-secretstore-setup
       EDGEX_SECURITY_SECRET_STORE: "true"
       PROXY_SETUP_HOST: edgex-security-proxy-setup
-      SECRETSTORE_HOST: edgex-vault
+      SECRETSTORE_HOST: edgex-secret-store
       SERVICE_HOST: edgex-device-opcua
       STAGEGATE_BOOTSTRAPPER_HOST: edgex-security-bootstrapper
       STAGEGATE_BOOTSTRAPPER_STARTPORT: "54321"
-      STAGEGATE_DATABASE_HOST: edgex-redis
-      STAGEGATE_DATABASE_PORT: "6379"
-      STAGEGATE_DATABASE_READYPORT: "6379"
+      STAGEGATE_DATABASE_HOST: edgex-postgres
+      STAGEGATE_DATABASE_PORT: "5432"
+      STAGEGATE_DATABASE_READYPORT: "5432"
       STAGEGATE_PROXYSETUP_READYPORT: "54325"
       STAGEGATE_READY_TORUNPORT: "54329"
-      STAGEGATE_REGISTRY_HOST: edgex-core-consul
-      STAGEGATE_REGISTRY_PORT: "8500"
+      STAGEGATE_REGISTRY_HOST: edgex-core-keeper
+      STAGEGATE_REGISTRY_PORT: "59890"
       STAGEGATE_REGISTRY_READYPORT: "54324"
       STAGEGATE_SECRETSTORESETUP_HOST: edgex-security-secretstore-setup
       STAGEGATE_SECRETSTORESETUP_TOKENS_READYPORT: "54322"

@@ -43,7 +43,7 @@ func (d *Driver) Initialize(sdk interfaces.DeviceServiceSDK) error {
 	d.sdk = sdk
 
 	// Define custom API endpoints
-	if err := d.sdk.AddCustomRoute("/api/v4/call", interfaces.Authenticated, handleMethodCall, http.MethodPost); err != nil {
+	if err := d.sdk.AddCustomRoute("/api/v3/call", interfaces.Authenticated, handleMethodCall, http.MethodPost); err != nil {
 		return fmt.Errorf("unable to add custom route to device service: %v", err)
 	}
 
