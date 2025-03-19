@@ -39,4 +39,4 @@ COPY --from=builder /device-opcua-go/cmd/res /res
 COPY LICENSE Attribution.txt /
 
 ENTRYPOINT ["/device-opcua"]
-CMD ["--cp=consul://edgex-core-consul:8500", "--registry"]
+CMD ["--cp=keeper.http://edgex-core-keeper:59890", "--registry"]
