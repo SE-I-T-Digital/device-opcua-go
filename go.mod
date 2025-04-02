@@ -2,12 +2,12 @@ module github.com/edgexfoundry/device-opcua-go
 
 go 1.23.0
 
-toolchain go1.23.5
+toolchain go1.24.1
 
 require (
 	github.com/edgexfoundry/device-sdk-go/v4 v4.0.0
 	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.1
-	github.com/go-playground/validator/v10 v10.25.0
+	github.com/go-playground/validator/v10 v10.26.0
 	github.com/gopcua/opcua v0.7.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/spf13/cast v1.7.1
