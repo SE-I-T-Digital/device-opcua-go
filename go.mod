@@ -10,7 +10,7 @@ require (
 	github.com/go-playground/validator/v10 v10.25.0
 	github.com/gopcua/opcua v0.7.1
 	github.com/labstack/echo/v4 v4.13.3
-	github.com/spf13/cast v1.7.1
+	github.com/spf13/cast v1.8.0
 	github.com/stretchr/testify v1.10.0
 )
 
