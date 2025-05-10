@@ -1,4 +1,9 @@
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
     - gosec
+  exclusions:
+    paths:
+      - internal/test/.*
+      - _test\.go$

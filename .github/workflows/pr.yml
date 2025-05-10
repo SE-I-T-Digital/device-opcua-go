@@ -62,6 +62,7 @@ jobs:
           python3 -m pip install opcua cryptography
       - name: Run unit tests
         run: |
+          make install-lint
           make test >> test-results.txt
       - name: Publish results to summary
         if: always()
