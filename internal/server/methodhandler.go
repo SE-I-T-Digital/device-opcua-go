@@ -14,7 +14,7 @@ import (
 	"github.com/gopcua/opcua/ua"
 )
 
-func (s *Server) ProcessMethodCall(method string, parameters []string) (interface{}, error) {
+func (s *Server) ProcessMethodCall(method string, parameters []string) (any, error) {
 	device, err := s.sdk.GetDeviceByName(s.deviceName)
 	if err != nil {
 		return nil, fmt.Errorf("device not found: %v", err)
@@ -32,7 +32,7 @@ func (s *Server) ProcessMethodCall(method string, parameters []string) (interfac
 	return s.makeMethodCall(resource, parameters)
 }
 
-func (s *Server) makeMethodCall(resource models.DeviceResource, parameters []string) (interface{}, error) {
+func (s *Server) makeMethodCall(resource models.DeviceResource, parameters []string) (any, error) {
 	if resource.IsHidden {
 		return nil, fmt.Errorf("Server.makeMethodCall: method call not allowed")
 	}

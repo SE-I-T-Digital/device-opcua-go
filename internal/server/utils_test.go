@@ -10,7 +10,7 @@ import "testing"
 
 func Test_getNodeID(t *testing.T) {
 	type args struct {
-		attrs map[string]interface{}
+		attrs map[string]any
 		id    string
 	}
 	tests := []struct {
@@ -21,13 +21,13 @@ func Test_getNodeID(t *testing.T) {
 	}{
 		{
 			name:    "NOK - key does not exist",
-			args:    args{attrs: map[string]interface{}{NODE: "ns=2"}, id: "fail"},
+			args:    args{attrs: map[string]any{NODE: "ns=2"}, id: "fail"},
 			want:    "",
 			wantErr: true,
 		},
 		{
 			name:    "OK - node id returned",
-			args:    args{attrs: map[string]interface{}{NODE: "ns=2;s=edgex/int32/var0"}, id: NODE},
+			args:    args{attrs: map[string]any{NODE: "ns=2;s=edgex/int32/var0"}, id: NODE},
 			want:    "ns=2;s=edgex/int32/var0",
 			wantErr: false,
 		},

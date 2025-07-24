@@ -7,13 +7,17 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	"github.com/edgexfoundry/device-opcua-go/internal/test"
 	"github.com/edgexfoundry/device-sdk-go/v4/pkg/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/models"
+	"github.com/gopcua/opcua"
+	"github.com/gopcua/opcua/ua"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNewServer(t *testing.T) {
@@ -58,6 +62,7 @@ func TestServer_Cleanup(t *testing.T) {
 		})
 	}
 }
+
 func TestServer_Connect(t *testing.T) {
 	deviceName := "testDevice"
 	mockDevice := models.Device{
@@ -66,21 +71,39 @@ func TestServer_Connect(t *testing.T) {
 		OperatingState: models.Up,
 		Protocols: map[string]models.ProtocolProperties{
 			"opcua": {
-				"endpoint": "opc.tcp://localhost:48408",
+				"Endpoint": test.Address,
+				"Policy":   "None",
+				"Mode":     "None",
 			},
 		},
 	}
 
-	s := test.NewServer("../test/opcua_server.py")
-	defer s.Close()
+	origGetEndpoints := getEndpoints
+	defer func() { getEndpoints = origGetEndpoints }()
+	getEndpoints = func(ctx context.Context, endpointURL string, opts ...opcua.Option) ([]*ua.EndpointDescription, error) {
+		if endpointURL == test.Address {
+			return []*ua.EndpointDescription{{SecurityPolicyURI: ua.SecurityPolicyURINone, SecurityMode: ua.MessageSecurityModeNone}}, nil
+		}
+		return nil, fmt.Errorf("bad endpoint")
+	}
+
+	mockClient := new(test.MockOpcuaClient)
+	origNewOpcuaClient := newOpcuaClient
+	defer func() { newOpcuaClient = origNewOpcuaClient }()
+	newOpcuaClient = func(endpoint string, opts ...opcua.Option) (opcuaClient, error) {
+		return mockClient, nil
+	}
 
 	t.Run("Connect with unlocked and up device", func(t *testing.T) {
 		mockSDK := mocks.NewDeviceServiceSDK(t)
 		mockSDK.On("GetDeviceByName", deviceName).Return(mockDevice, nil)
+		mockClient.On("Connect", mock.Anything).Return(nil).Once()
 
 		server := NewServer(deviceName, mockSDK)
+		server.client = &Client{mockClient, server.context.ctx}
 		err := server.Connect()
 		assert.NoError(t, err)
+		mockClient.AssertExpectations(t)
 	})
 
 	t.Run("Connect with locked device", func(t *testing.T) {

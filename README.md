@@ -23,7 +23,7 @@ This repository is a Go-based EdgeX Foundry Device Service which uses OPC-UA pro
 
 ### Simulation Server
 
-Download the Prosys OPC UA Simulation Server from [here](https://www.prosysopc.com/products/opc-ua-simulation-server/). Install and run it to have access to the default configured resources.
+Download the [Prosys OPC UA Simulation Server](https://www.prosysopc.com/products/opc-ua-simulation-server/). Install and run it to have access to the default configured resources.
 
 ### Pre-defined Devices
 
@@ -259,24 +259,9 @@ See [Compose Builder](https://github.com/edgexfoundry/edgex-compose/tree/main/co
 
 ## Testing
 
-Running unit tests starts a mock OPCUA server on port `48408`.
-
-The mock server defines the following attributes:
-
-| Variable Name | Type      | Default Value          | Writable |
-| ------------- | --------- | ---------------------- | -------- |
-| `ro_bool`     | `Boolean` | `True`                 |          |
-| `rw_bool`     | `Boolean` | `True`                 | ✅       |
-| `ro_int32`    | `Int32`   | `5`                    |          |
-| `rw_int32`    | `Int32`   | `5`                    | ✅       |
-| `square`      | `Method`  | `Int64` (return value) |          |
-
-All attributes are defined in `ns=2`.
+Unit tests can be run with the following command:
 
 ```bash
-# Install requirements (if necessary)
-python3 -m pip install opcua
-# Run tests
 make test
 ```
 
