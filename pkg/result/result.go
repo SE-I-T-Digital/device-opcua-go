@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-func NewResult(req sdkModel.CommandRequest, reading interface{}) (*sdkModel.CommandValue, error) {
+func NewResult(req sdkModel.CommandRequest, reading any) (*sdkModel.CommandValue, error) {
 	var result = &sdkModel.CommandValue{}
 	var err error
 	castError := "fail to parse %v reading, %v"
@@ -27,7 +27,7 @@ func NewResult(req sdkModel.CommandRequest, reading interface{}) (*sdkModel.Comm
 		return result, err
 	}
 
-	var val interface{}
+	var val any
 
 	switch req.Type {
 	case common.ValueTypeBool:

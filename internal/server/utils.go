@@ -19,7 +19,7 @@ const (
 	INPUTMAP string = "inputMap"
 )
 
-func getNodeID(attrs map[string]interface{}, id string) (*ua.NodeID, error) {
+func getNodeID(attrs map[string]any, id string) (*ua.NodeID, error) {
 	identifier, ok := attrs[id]
 	if !ok {
 		return nil, fmt.Errorf("attribute %s does not exist", id)

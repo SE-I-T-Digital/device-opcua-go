@@ -15,8 +15,8 @@ import (
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/common"
 )
 
-func NewValue(valueType string, param *sdkModel.CommandValue) (interface{}, error) {
-	var commandValue interface{}
+func NewValue(valueType string, param *sdkModel.CommandValue) (any, error) {
+	var commandValue any
 	var err error
 	switch valueType {
 	case common.ValueTypeBool:

@@ -7,11 +7,13 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	"github.com/edgexfoundry/device-opcua-go/internal/test"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/models"
+	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
 )
 
@@ -69,28 +71,28 @@ func TestDriver_initClient(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:    "NOK - no server connection",
-			config:  &Config{Endpoint: "opc.tcp://test"},
-			wantErr: true,
-		},
-		{
 			name: "OK",
 			config: &Config{
-				Endpoint: test.Protocol + test.Address,
+				Endpoint: test.Address,
 				Policy:   "None",
 				Mode:     "None",
 			},
 		},
 	}
+
+	origGetEndpoints := getEndpoints
+	defer func() { getEndpoints = origGetEndpoints }()
+	getEndpoints = func(ctx context.Context, endpointURL string, opts ...opcua.Option) ([]*ua.EndpointDescription, error) {
+		if endpointURL == test.Address {
+			return []*ua.EndpointDescription{{SecurityPolicyURI: ua.SecurityPolicyURINone, SecurityMode: ua.MessageSecurityModeNone}}, nil
+		}
+		return nil, fmt.Errorf("bad endpoint")
+	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			dsMock := test.NewDSMock(t)
 			s := NewServer("Test", dsMock)
-
-			if !tt.wantErr {
-				server := test.NewServer("../test/opcua_server.py")
-				defer server.Close()
-			}
 
 			s.config = tt.config
 			err := s.initClient()

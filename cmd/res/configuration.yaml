@@ -2,12 +2,6 @@ MaxEventSize: 0
 
 Writable:
   LogLevel: INFO
-  InsecureSecrets:
-    OPCUA:
-      SecretName: redisdb
-      SecretData:
-        username: ""
-        password: ""
 
 Service:
   Host: localhost

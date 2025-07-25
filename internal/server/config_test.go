@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/edgexfoundry/device-opcua-go/internal/test"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/models"
 )
 
@@ -23,9 +24,9 @@ func TestNewConfig(t *testing.T) {
 		{
 			name: "OK - endpoint and resources",
 			props: models.ProtocolProperties{
-				Endpoint: "opc.tcp://test", "Policy": "None", "Mode": "None", "Resources": []string{"A", "B", "C"}},
+				Endpoint: test.Address, "Policy": "None", "Mode": "None", "Resources": []string{"A", "B", "C"}},
 			want: &Config{
-				Endpoint: "opc.tcp://test", Policy: "None", Mode: "None", Resources: []string{"A", "B", "C"}, CertFile: "", KeyFile: ""},
+				Endpoint: test.Address, Policy: "None", Mode: "None", Resources: []string{"A", "B", "C"}, CertFile: "", KeyFile: ""},
 		},
 	}
 	for _, tt := range tests {
@@ -60,14 +61,14 @@ func TestValidate(t *testing.T) {
 		{
 			name: "NOK - invalid policy or mode",
 			cfg: &Config{
-				Endpoint: "opc.tcp://test",
+				Endpoint: test.Address,
 			},
 			wantErr: true,
 		},
 		{
 			name: "NOK - missing certfile or keyfile",
 			cfg: &Config{
-				Endpoint: "opc.tcp://test",
+				Endpoint: test.Address,
 				Policy:   "Basic256",
 				Mode:     "Sign",
 			},
@@ -76,7 +77,7 @@ func TestValidate(t *testing.T) {
 		{
 			name: "OK - endpoint and resources",
 			cfg: &Config{
-				Endpoint: "opc.tcp://test", Policy: "None", Mode: "None", Resources: []string{"A", "B", "C"}, CertFile: "", KeyFile: ""},
+				Endpoint: test.Address, Policy: "None", Mode: "None", Resources: []string{"A", "B", "C"}, CertFile: "", KeyFile: ""},
 		},
 	}
 	for _, tt := range tests {

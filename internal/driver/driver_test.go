@@ -223,7 +223,7 @@ func TestDriver_ValidateDevice(t *testing.T) {
 		{
 			name: "OK - valid device",
 			device: models.Device{Protocols: map[string]models.ProtocolProperties{"opcua": {
-				"Endpoint":  "opc.tcp://test",
+				"Endpoint":  test.Address,
 				"Policy":    "None",
 				"Mode":      "None",
 				"Resources": []string{"A", "B", "C"},

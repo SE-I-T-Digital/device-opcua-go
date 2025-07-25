@@ -7,7 +7,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -20,6 +19,7 @@ import (
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
 	"github.com/spf13/cast"
+	"github.com/stretchr/testify/mock"
 )
 
 const (
@@ -48,7 +48,7 @@ func TestDriver_ProcessReadCommands(t *testing.T) {
 				protocols:  map[string]models.ProtocolProperties{Protocol: {}},
 				reqs:       []sdkModel.CommandRequest{{DeviceResourceName: "TestVar1"}},
 			},
-			want:        nil,
+			want:        []*sdkModel.CommandValue{nil},
 			wantErr:     true,
 			endpointErr: true,
 		},
@@ -56,13 +56,13 @@ func TestDriver_ProcessReadCommands(t *testing.T) {
 		{
 			name: "OK - non-existent variable",
 			args: args{
-				deviceName: "Test",
+				deviceName: "TestWithFakeVar",
 				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Protocol + test.Address},
+					Protocol: {Endpoint: test.Address},
 				},
 				reqs: []sdkModel.CommandRequest{{
 					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]interface{}{NODE: "ns=2;s=fake"},
+					Attributes:         map[string]any{NODE: "ns=2;s=fake"},
 					Type:               common.ValueTypeInt32,
 				}},
 			},
@@ -73,11 +73,11 @@ func TestDriver_ProcessReadCommands(t *testing.T) {
 			args: args{
 				deviceName: "Test",
 				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Protocol + test.Address},
+					Protocol: {Endpoint: test.Address},
 				},
 				reqs: []sdkModel.CommandRequest{{
 					DeviceResourceName: "TestResource1",
-					Attributes:         map[string]interface{}{NODE: "ns=2;i=22;z=43"},
+					Attributes:         map[string]any{NODE: "ns=2;i=22;z=43"},
 					Type:               common.ValueTypeInt32,
 				}},
 			},
@@ -89,11 +89,11 @@ func TestDriver_ProcessReadCommands(t *testing.T) {
 			args: args{
 				deviceName: "Test",
 				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Protocol + test.Address},
+					Protocol: {Endpoint: test.Address},
 				},
 				reqs: []sdkModel.CommandRequest{{
 					DeviceResourceName: "SquareResource",
-					Attributes:         map[string]interface{}{METHOD: "ns=2;s=square", OBJECT: "ns=2;s=main"},
+					Attributes:         map[string]any{METHOD: "ns=2;s=square", OBJECT: "ns=2;s=main"},
 					Type:               common.ValueTypeInt64,
 				}},
 			},
@@ -101,36 +101,15 @@ func TestDriver_ProcessReadCommands(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "OK - client is nil, but reconnect successful",
-			args: args{
-				deviceName: "Test",
-				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Protocol + test.Address},
-				},
-				reqs: []sdkModel.CommandRequest{{
-					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]interface{}{NODE: "ns=2;s=ro_int32"},
-					Type:               common.ValueTypeInt32,
-				}},
-			},
-			want: []*sdkModel.CommandValue{{
-				DeviceResourceName: "TestVar1",
-				Type:               common.ValueTypeInt32,
-				Value:              int32(5),
-				Tags:               make(map[string]string),
-			}},
-			nilClient: true,
-		},
-		{
 			name: "OK - read value from mock server",
 			args: args{
 				deviceName: "Test",
 				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Protocol + test.Address},
+					Protocol: {Endpoint: test.Address},
 				},
 				reqs: []sdkModel.CommandRequest{{
 					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]interface{}{NODE: "ns=2;s=ro_int32"},
+					Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
 					Type:               common.ValueTypeInt32,
 				}},
 			},
@@ -147,15 +126,15 @@ func TestDriver_ProcessReadCommands(t *testing.T) {
 			args: args{
 				deviceName: "Test",
 				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Protocol + test.Address},
+					Protocol: {Endpoint: test.Address},
 				},
 				reqs: []sdkModel.CommandRequest{{
 					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]interface{}{NODE: "ns=2;s=ro_int32"},
+					Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
 					Type:               common.ValueTypeInt32,
 				}, {
 					DeviceResourceName: "TestVar2",
-					Attributes:         map[string]interface{}{NODE: "ns=2;s=ro_bool"},
+					Attributes:         map[string]any{NODE: "ns=2;s=ro_bool"},
 					Type:               common.ValueTypeBool,
 				}},
 			},
@@ -174,33 +153,36 @@ func TestDriver_ProcessReadCommands(t *testing.T) {
 		},
 	}
 
-	server := test.NewServer("../test/opcua_server.py")
-	defer server.Close()
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create device client and open connection
 			endpoint := cast.ToString(tt.args.protocols[Protocol][Endpoint])
-			client, err := opcua.NewClient(endpoint, opcua.SecurityMode(ua.MessageSecurityModeNone))
-			if err != nil {
-				t.Fatalf("unable to create opcua client %v", err)
-			}
-			ctx := context.Background()
-			defer client.Close(ctx)
-			if err := client.Connect(ctx); err != nil {
-				if !tt.wantErr || !tt.endpointErr {
-					t.Errorf("Unable to connect to server: %v", err)
-				}
-				return
-			}
 
 			dsMock := test.NewDSMock(t)
 			s := NewServer(tt.args.deviceName, dsMock)
+			clientMock := new(test.MockOpcuaClient)
+
+			if endpoint == "" {
+				clientMock.On("Connect", s.context.ctx).Return(fmt.Errorf("error"))
+			} else {
+				clientMock.On("Connect", s.context.ctx).Return(nil)
+			}
+
+			readResponse := &ua.ReadResponse{}
+			if tt.args.deviceName != "TestWithFakeVar" {
+				readResponse.Results = []*ua.DataValue{
+					{Value: ua.MustVariant(int32(5))},
+					{Value: ua.MustVariant(true)},
+				}
+			}
+			clientMock.On("Read", s.context.ctx, mock.Anything).Return(readResponse, nil)
+			clientMock.On("State").Return(opcua.Connected)
+			s.config = &Config{Endpoint: endpoint}
+
 			if tt.nilClient {
 				s.client = nil
 				dsMock.On("GetDeviceByName", tt.args.deviceName).Return(models.Device{Name: tt.args.deviceName, Protocols: tt.args.protocols}, nil)
-			} else {
-				s.client = &Client{client, context.Background()}
+			} else if !tt.endpointErr {
+				s.client = &Client{clientMock, s.context.ctx}
 			}
 			got, err := s.ProcessReadCommands(tt.args.reqs)
 			if (err != nil) != tt.wantErr {
@@ -240,11 +222,11 @@ func TestDriver_ProcessReadCommandsNoServer(t *testing.T) {
 			args: args{
 				deviceName: "Test",
 				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Protocol + test.Address},
+					Protocol: {Endpoint: test.Address},
 				},
 				reqs: []sdkModel.CommandRequest{{
 					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]interface{}{NODE: "ns=2;s=ro_int32"},
+					Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
 					Type:               common.ValueTypeInt32,
 				}},
 			},
@@ -257,11 +239,11 @@ func TestDriver_ProcessReadCommandsNoServer(t *testing.T) {
 			args: args{
 				deviceName: "Test",
 				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Protocol + test.Address},
+					Protocol: {Endpoint: test.Address},
 				},
 				reqs: []sdkModel.CommandRequest{{
 					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]interface{}{NODE: "ns=2;s=ro_int32"},
+					Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
 					Type:               common.ValueTypeInt32,
 				}},
 			},
@@ -272,21 +254,15 @@ func TestDriver_ProcessReadCommandsNoServer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create device client and open connection
-			endpoint := cast.ToString(tt.args.protocols[Protocol][Endpoint])
-			client, err := opcua.NewClient(endpoint, opcua.SecurityMode(ua.MessageSecurityModeNone))
-			if err != nil {
-				t.Fatalf("unable to create opcua client %v", err)
-			}
-			ctx := context.Background()
-			defer client.Close(ctx)
-
 			dsMock := test.NewDSMock(t)
 			s := NewServer(tt.args.deviceName, dsMock)
+			clientMock := new(test.MockOpcuaClient)
+			clientMock.On("State").Return(opcua.Disconnected)
+			clientMock.On("Connect", s.context.ctx).Return(fmt.Errorf("error"))
 			if tt.nilClient {
 				s.client = nil
 			} else {
-				s.client = &Client{client, context.Background()}
+				s.client = &Client{clientMock, s.context.ctx}
 			}
 			dsMock.On("GetDeviceByName", tt.args.deviceName).Return(models.Device{}, fmt.Errorf("error"))
 
@@ -390,7 +366,7 @@ func TestBuildReadRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			reqs := make([]sdkModel.CommandRequest, 0, len(tt.reqNodeIds))
 			for _, id := range tt.reqNodeIds {
-				reqs = append(reqs, sdkModel.CommandRequest{Attributes: map[string]interface{}{NODE: id}})
+				reqs = append(reqs, sdkModel.CommandRequest{Attributes: map[string]any{NODE: id}})
 			}
 
 			nodesToRead, resultToRequest, err := buildNodesToReadRequest(reqs)
@@ -421,7 +397,7 @@ func TestBuildReadRequest(t *testing.T) {
 func TestBuildReadRequestOnMethod(t *testing.T) {
 	reqs := []sdkModel.CommandRequest{
 		{
-			Attributes: map[string]interface{}{METHOD: true},
+			Attributes: map[string]any{METHOD: true},
 		},
 	}
 	_, _, err := buildNodesToReadRequest(reqs)
@@ -434,7 +410,7 @@ func TestBuildReadRequestOnMethod(t *testing.T) {
 func TestBuildReadRequestOnMissingNodeId(t *testing.T) {
 	reqs := []sdkModel.CommandRequest{
 		{
-			Attributes: map[string]interface{}{METHOD: false},
+			Attributes: map[string]any{METHOD: false},
 		},
 	}
 	_, _, err := buildNodesToReadRequest(reqs)

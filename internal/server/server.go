@@ -22,8 +22,24 @@ type CancelContext struct {
 	cancel context.CancelFunc
 }
 
+var getEndpoints = opcua.GetEndpoints
+var newOpcuaClient = func(endpoint string, opts ...opcua.Option) (opcuaClient, error) {
+	return opcua.NewClient(endpoint, opts...)
+}
+
+// opcuaClient is an interface for opcua.Client to allow for mocking
+type opcuaClient interface {
+	Connect(ctx context.Context) error
+	Close(ctx context.Context) error
+	Call(ctx context.Context, req *ua.CallMethodRequest) (*ua.CallMethodResult, error)
+	Read(ctx context.Context, req *ua.ReadRequest) (*ua.ReadResponse, error)
+	Write(ctx context.Context, req *ua.WriteRequest) (*ua.WriteResponse, error)
+	Subscribe(ctx context.Context, params *opcua.SubscriptionParameters, notifyCh chan<- *opcua.PublishNotificationData) (*opcua.Subscription, error)
+	State() opcua.ConnState
+}
+
 type Client struct {
-	*opcua.Client
+	opcuaClient
 	ctx context.Context
 }
 
@@ -110,7 +126,7 @@ func (s *Server) newContext() {
 
 func (s *Server) initClient() error {
 
-	endpoints, err := opcua.GetEndpoints(s.context.ctx, s.config.Endpoint)
+	endpoints, err := getEndpoints(s.context.ctx, s.config.Endpoint)
 	if err != nil {
 		return err
 	}
@@ -131,7 +147,7 @@ func (s *Server) initClient() error {
 		opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeAnonymous),
 	}
 
-	uaClient, err := opcua.NewClient(ep.EndpointURL, opts...)
+	client, err := newOpcuaClient(ep.EndpointURL, opts...)
 	if err != nil {
 		return err
 	}
@@ -140,7 +156,7 @@ func (s *Server) initClient() error {
 	defer s.mu.Unlock()
 
 	s.client = &Client{
-		uaClient,
+		client,
 		context.Background(),
 	}
 

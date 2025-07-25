@@ -118,7 +118,7 @@ func (s *Server) handleDataChange(dcn *ua.DataChangeNotification) {
 	}
 }
 
-func (s *Server) onIncomingDataReceived(data interface{}, nodeResourceName string) error {
+func (s *Server) onIncomingDataReceived(data any, nodeResourceName string) error {
 	deviceResource, ok := s.sdk.DeviceResource(s.deviceName, nodeResourceName)
 	if !ok {
 		return fmt.Errorf("[%s] Incoming reading ignored. No DeviceObject found: deviceResource=%v value=%v", s.deviceName, nodeResourceName, data)

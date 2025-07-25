@@ -7,7 +7,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -35,7 +34,7 @@ func TestDriver_ProcessMethodCall(t *testing.T) {
 		name      string
 		args      args
 		deviceErr error
-		want      interface{}
+		want      any
 		wantErr   bool
 		nilClient bool
 	}{
@@ -79,7 +78,7 @@ func TestDriver_ProcessMethodCall(t *testing.T) {
 			args: args{
 				resource: models.DeviceResource{
 					Name:       "TestResource1",
-					Attributes: map[string]interface{}{METHOD: "ns=2;s=test"},
+					Attributes: map[string]any{METHOD: "ns=2;s=test"},
 				},
 				device: okDevice,
 			},
@@ -90,7 +89,7 @@ func TestDriver_ProcessMethodCall(t *testing.T) {
 			args: args{
 				resource: models.DeviceResource{
 					Name:       "TestResource1",
-					Attributes: map[string]interface{}{OBJECT: "ns=2;s=main"},
+					Attributes: map[string]any{OBJECT: "ns=2;s=main"},
 				},
 				device: okDevice,
 			},
@@ -101,8 +100,8 @@ func TestDriver_ProcessMethodCall(t *testing.T) {
 			args: args{
 				resource: models.DeviceResource{
 					Name: "TestResource1",
-					Attributes: map[string]interface{}{
-						METHOD: "ns=2;s=test",
+					Attributes: map[string]any{
+						METHOD: "NONE",
 						OBJECT: "ns=2;s=main",
 					},
 				},
@@ -115,7 +114,7 @@ func TestDriver_ProcessMethodCall(t *testing.T) {
 			args: args{
 				resource: models.DeviceResource{
 					Name: "TestResource1",
-					Attributes: map[string]interface{}{
+					Attributes: map[string]any{
 						METHOD: "ns=2;s=square",
 						OBJECT: "ns=2;s=main",
 					},
@@ -131,7 +130,7 @@ func TestDriver_ProcessMethodCall(t *testing.T) {
 			args: args{
 				resource: models.DeviceResource{
 					Name: "TestResource1",
-					Attributes: map[string]interface{}{
+					Attributes: map[string]any{
 						METHOD: "ns=2;s=square",
 						OBJECT: "ns=2;s=main",
 					},
@@ -143,37 +142,32 @@ func TestDriver_ProcessMethodCall(t *testing.T) {
 		},
 	}
 
-	server := test.NewServer("../test/opcua_server.py")
-	defer server.Close()
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create device client and open connection
-			endpoint := test.Protocol + test.Address
-			client, err := opcua.NewClient(endpoint, opcua.SecurityMode(ua.MessageSecurityModeNone))
-			if err != nil {
-				t.Fatalf("unable to create opcua client %v", err)
-			}
-			ctx := context.Background()
-			defer client.Close(ctx)
-			if err := client.Connect(ctx); err != nil {
-				if !tt.wantErr {
-					t.Errorf("Unable to connect to server: %v", err)
-				}
-				return
-			}
-
 			dsMock := test.NewDSMock(t)
 			s := NewServer("test", dsMock)
+			clientMock := new(test.MockOpcuaClient)
+
 			dsMock.On("GetDeviceByName", mock.Anything).Return(tt.args.device, tt.deviceErr).Times(1)
 			if tt.deviceErr == nil && tt.args.device.AdminState != models.Locked && tt.args.device.OperatingState != models.Down {
 				dsMock.On("DeviceResource", mock.Anything, tt.args.method).Return(tt.args.resource, tt.args.resource.Name != "")
 			}
 			if tt.nilClient {
 				s.client = nil
+				clientMock.On("State").Return(opcua.Closed)
+				clientMock.On("Connect", mock.Anything).Return(fmt.Errorf("error"))
 				dsMock.On("GetDeviceByName", mock.Anything).Return(models.Device{}, fmt.Errorf("error")).Times(1)
 			} else {
-				s.client = &Client{client, context.Background()}
+				s.client = &Client{clientMock, s.context.ctx}
+				clientMock.On("State").Return(opcua.Connected)
+				if tt.args.resource.Attributes[METHOD] != "NONE" {
+					clientMock.On("Call", mock.Anything, mock.Anything).Return(&ua.CallMethodResult{
+						StatusCode:      ua.StatusOK,
+						OutputArguments: []*ua.Variant{ua.MustVariant("4")},
+					}, nil)
+				} else {
+					clientMock.On("Call", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("no method with that name"))
+				}
 			}
 			got, err := s.ProcessMethodCall(tt.args.method, tt.args.parameters)
 			if (err != nil) != tt.wantErr {
