@@ -62,3 +62,15 @@ docker-nats:
 
 vendor:
 	CGO_ENABLED=0 go mod vendor
+
+.PHONY: get-go-licenses attributions
+
+get-go-licenses:
+	@go install github.com/google/go-licenses/v2@latest
+
+# -tags required to resolve inherited dependencies in go.mod that require certain build flags
+attributions: get-go-licenses
+	@GOFLAGS='-tags=windows,include_nats_messaging,plan9,pkcs11,aix,cgo,linux' \
+		go-licenses report ./... \
+		--ignore github.com/edgexfoundry/device-opcua-go \
+		--template bin/attributions.template > Attribution.txt
