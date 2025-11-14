@@ -74,3 +74,5 @@ attributions: get-go-licenses
 		go-licenses report ./... \
 		--ignore github.com/edgexfoundry/device-opcua-go \
 		--template bin/attributions.template > Attribution.txt
+	@echo "\nChecking generated Attribution.txt file for missing entries...\n"
+	@./bin/test-attribution-txt.sh
