@@ -1,0 +1,12 @@
+{{ range . }}{{ .Name }} ({{ .LicenseName }})
+{{ .LicenseURL }}
+
+{{ end }}---
+
+# The following dependencies cannot be resolved by GOFLAGS -tags
+
+github.com/gorilla/mux (BSD-3-Clause)
+https://github.com/gorilla/mux/blob/v1.8.1/LICENSE
+
+nhooyr.io/websocket (ISC)
+https://github.com/coder/websocket/blob/master/LICENSE.txt
