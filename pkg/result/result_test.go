@@ -586,3 +586,183 @@ func TestNewResult_numberToString(t *testing.T) {
 		t.Errorf("Convert new result(%v) failed, error: %v", val, err)
 	}
 }
+
+func TestNewResult_boolArray(t *testing.T) {
+	var reading any = []bool{true, false, true}
+	req := models.CommandRequest{
+		DeviceResourceName: "light",
+		Type:               common.ValueTypeBoolArray,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.BoolArrayValue()
+	assert.Equal(t, val, []bool{true, false, true})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_stringArray(t *testing.T) {
+	var reading any = []string{"a", "b", "c"}
+	req := models.CommandRequest{
+		DeviceResourceName: "stringArray",
+		Type:               common.ValueTypeStringArray,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.StringArrayValue()
+	assert.Equal(t, val, []string{"a", "b", "c"})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_uint8Array(t *testing.T) {
+	var reading any = []uint8{1, 2, 3}
+	req := models.CommandRequest{
+		DeviceResourceName: "uint8Array",
+		Type:               common.ValueTypeUint8Array,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.Uint8ArrayValue()
+	assert.Equal(t, val, []uint8{1, 2, 3})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_uint16Array(t *testing.T) {
+	var reading any = []uint16{1, 2, 3}
+	req := models.CommandRequest{
+		DeviceResourceName: "uint16Array",
+		Type:               common.ValueTypeUint16Array,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.Uint16ArrayValue()
+	assert.Equal(t, val, []uint16{1, 2, 3})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_uint32Array(t *testing.T) {
+	var reading any = []uint32{1, 2, 3}
+	req := models.CommandRequest{
+		DeviceResourceName: "uint32Array",
+		Type:               common.ValueTypeUint32Array,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.Uint32ArrayValue()
+	assert.Equal(t, val, []uint32{1, 2, 3})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_uint64Array(t *testing.T) {
+	var reading any = []uint64{1, 2, 3}
+	req := models.CommandRequest{
+		DeviceResourceName: "uint64Array",
+		Type:               common.ValueTypeUint64Array,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.Uint64ArrayValue()
+	assert.Equal(t, val, []uint64{1, 2, 3})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_int8Array(t *testing.T) {
+	var reading any = []int8{1, 2, 3}
+	req := models.CommandRequest{
+		DeviceResourceName: "int8Array",
+		Type:               common.ValueTypeInt8Array,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.Int8ArrayValue()
+	assert.Equal(t, val, []int8{1, 2, 3})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_int16Array(t *testing.T) {
+	var reading any = []int16{1, 2, 3}
+	req := models.CommandRequest{
+		DeviceResourceName: "int16Array",
+		Type:               common.ValueTypeInt16Array,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.Int16ArrayValue()
+	assert.Equal(t, val, []int16{1, 2, 3})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_int32Array(t *testing.T) {
+	var reading any = []int32{1, 2, 3}
+	req := models.CommandRequest{
+		DeviceResourceName: "int32Array",
+		Type:               common.ValueTypeInt32Array,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.Int32ArrayValue()
+	assert.Equal(t, val, []int32{1, 2, 3})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_int64Array(t *testing.T) {
+	var reading any = []int64{1, 2, 3}
+	req := models.CommandRequest{
+		DeviceResourceName: "int64Array",
+		Type:               common.ValueTypeInt64Array,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.Int64ArrayValue()
+	assert.Equal(t, val, []int64{1, 2, 3})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_float32Array(t *testing.T) {
+	var reading any = []float32{1.1, 2.2, 3.3}
+	req := models.CommandRequest{
+		DeviceResourceName: "float32Array",
+		Type:               common.ValueTypeFloat32Array,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.Float32ArrayValue()
+	assert.Equal(t, val, []float32{1.1, 2.2, 3.3})
+	assert.NoError(t, err)
+}
+
+func TestNewResult_float64Array(t *testing.T) {
+	var reading any = []float64{1.1, 2.2, 3.3}
+	req := models.CommandRequest{
+		DeviceResourceName: "float64Array",
+		Type:               common.ValueTypeFloat64Array,
+	}
+
+	cmdVal, err := NewResult(req, reading)
+	require.NoError(t, err)
+
+	val, err := cmdVal.Float64ArrayValue()
+	assert.Equal(t, val, []float64{1.1, 2.2, 3.3})
+	assert.NoError(t, err)
+}
