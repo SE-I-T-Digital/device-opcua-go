@@ -4,7 +4,7 @@ go 1.24.7
 
 require (
 	github.com/edgexfoundry/device-sdk-go/v4 v4.0.0
-	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.1
+	github.com/edgexfoundry/go-mod-core-contracts/v4 v4.0.2
 	github.com/go-playground/validator/v10 v10.28.0
 	github.com/gopcua/opcua v0.8.0
 	github.com/labstack/echo/v4 v4.13.4
