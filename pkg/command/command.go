@@ -43,6 +43,30 @@ func NewValue(valueType string, param *sdkModel.CommandValue) (any, error) {
 		commandValue, err = param.Float32Value()
 	case common.ValueTypeFloat64:
 		commandValue, err = param.Float64Value()
+	case common.ValueTypeBoolArray:
+		commandValue, err = param.BoolArrayValue()
+	case common.ValueTypeStringArray:
+		commandValue, err = param.StringArrayValue()
+	case common.ValueTypeUint8Array:
+		commandValue, err = param.Uint8ArrayValue()
+	case common.ValueTypeUint16Array:
+		commandValue, err = param.Uint16ArrayValue()
+	case common.ValueTypeUint32Array:
+		commandValue, err = param.Uint32ArrayValue()
+	case common.ValueTypeUint64Array:
+		commandValue, err = param.Uint64ArrayValue()
+	case common.ValueTypeInt8Array:
+		commandValue, err = param.Int8ArrayValue()
+	case common.ValueTypeInt16Array:
+		commandValue, err = param.Int16ArrayValue()
+	case common.ValueTypeInt32Array:
+		commandValue, err = param.Int32ArrayValue()
+	case common.ValueTypeInt64Array:
+		commandValue, err = param.Int64ArrayValue()
+	case common.ValueTypeFloat32Array:
+		commandValue, err = param.Float32ArrayValue()
+	case common.ValueTypeFloat64Array:
+		commandValue, err = param.Float64ArrayValue()
 	default:
 		err = fmt.Errorf("fail to convert param, none supported value type: %v", valueType)
 	}
