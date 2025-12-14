@@ -76,3 +76,8 @@ attributions: get-go-licenses
 		--template bin/attributions.template > Attribution.txt
 	@echo "\nChecking generated Attribution.txt file for missing entries...\n"
 	@./bin/test-attribution-txt.sh
+
+.PHONY: install-mockery
+
+install-mockery:
+	@go install github.com/vektra/mockery/v3@v3.6.1

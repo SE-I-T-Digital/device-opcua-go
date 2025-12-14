@@ -7,3 +7,4 @@ vendor
 VERSION
 coverage.out
 test-results.*
+**/mocks

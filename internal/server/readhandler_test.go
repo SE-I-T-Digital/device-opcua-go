@@ -12,13 +12,14 @@ import (
 	"testing"
 
 	"github.com/edgexfoundry/device-opcua-go/internal/test"
+	"github.com/edgexfoundry/device-opcua-go/pkg/gopcua"
+	gopcuaMocks "github.com/edgexfoundry/device-opcua-go/pkg/gopcua/mocks"
 	sdkModel "github.com/edgexfoundry/device-sdk-go/v4/pkg/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/models"
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
-	"github.com/spf13/cast"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -28,258 +29,222 @@ const (
 )
 
 func TestDriver_ProcessReadCommands(t *testing.T) {
-	type args struct {
-		deviceName string
-		protocols  map[string]models.ProtocolProperties
-		reqs       []sdkModel.CommandRequest
-	}
-	tests := []struct {
-		name        string
-		args        args
-		want        []*sdkModel.CommandValue
-		wantErr     bool
-		endpointErr bool
-		nilClient   bool
-	}{
-		{
-			name: "NOK - no endpoint defined",
-			args: args{
-				deviceName: "Test",
-				protocols:  map[string]models.ProtocolProperties{Protocol: {}},
-				reqs:       []sdkModel.CommandRequest{{DeviceResourceName: "TestVar1"}},
+	origGetEndpoints := gopcua.GetEndpoints
+	defer func() { gopcua.GetEndpoints = origGetEndpoints }()
+	test.MockGetEndpoints()
+
+	origNewOpcuaClient := gopcua.NewClient
+	defer func() { gopcua.NewClient = origNewOpcuaClient }()
+
+	t.Run("NOK - no endpoint defined", func(t *testing.T) {
+		reqs := []sdkModel.CommandRequest{{
+			DeviceResourceName: "TestVar1",
+			Attributes:         map[string]any{NODE: "ns=2;s=fake"},
+			Type:               common.ValueTypeInt32,
+		}}
+		dsMock := test.NewDSMock(t)
+		dsMock.On("GetDeviceByName", "Test").Return(models.Device{Protocols: map[string]models.ProtocolProperties{Protocol: {Endpoint: ""}}}, nil)
+		s := NewServer("Test", dsMock)
+
+		_, err := s.ProcessReadCommands(reqs)
+		if err == nil {
+			t.Error("expected an error but got none")
+		}
+	})
+
+	t.Run("OK - non-existent variable", func(t *testing.T) {
+		reqs := []sdkModel.CommandRequest{{
+			DeviceResourceName: "TestVar1",
+			Attributes:         map[string]any{NODE: "ns=2;s=fake"},
+			Type:               common.ValueTypeInt32,
+		}}
+		want := make([]*sdkModel.CommandValue, 1)
+
+		dsMock := test.NewDSMock(t)
+		s := NewServer("TestWithFakeVar", dsMock)
+		s.config = &Config{Endpoint: test.Address}
+		clientMock := gopcuaMocks.NewMockClient(t)
+
+		readResponse := &ua.ReadResponse{}
+
+		clientMock.On("Read", s.context.ctx, mock.Anything).Return(readResponse, nil)
+		clientMock.On("State").Return(opcua.Connected)
+		s.client = &Client{clientMock, s.context.ctx}
+
+		got, err := s.ProcessReadCommands(reqs)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Driver.HandleReadCommands() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("NOK - read command - invalid node id", func(t *testing.T) {
+		reqs := []sdkModel.CommandRequest{{
+			DeviceResourceName: "TestResource1",
+			Attributes:         map[string]any{NODE: "ns=2;i=22;z=43"},
+			Type:               common.ValueTypeInt32,
+		}}
+		dsMock := test.NewDSMock(t)
+		s := NewServer("Test", dsMock)
+		s.config = &Config{Endpoint: test.Address}
+
+		_, err := s.ProcessReadCommands(reqs)
+		if err == nil {
+			t.Error("expected an error but got none")
+		}
+	})
+
+	t.Run("NOK - not allowed to call method with reader", func(t *testing.T) {
+		reqs := []sdkModel.CommandRequest{{
+			DeviceResourceName: "SquareResource",
+			Attributes:         map[string]any{METHOD: "ns=2;s=square", OBJECT: "ns=2;s=main"},
+			Type:               common.ValueTypeInt64,
+		}}
+		dsMock := test.NewDSMock(t)
+		s := NewServer("Test", dsMock)
+		s.config = &Config{Endpoint: test.Address}
+
+		_, err := s.ProcessReadCommands(reqs)
+		if err == nil {
+			t.Error("expected an error but got none")
+		}
+	})
+
+	t.Run("OK - read value from mock server", func(t *testing.T) {
+		reqs := []sdkModel.CommandRequest{{
+			DeviceResourceName: "TestVar1",
+			Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
+			Type:               common.ValueTypeInt32,
+		}}
+		want := []*sdkModel.CommandValue{{
+			DeviceResourceName: "TestVar1",
+			Type:               common.ValueTypeInt32,
+			Value:              int32(5),
+			Tags:               make(map[string]string),
+		}}
+		dsMock := test.NewDSMock(t)
+		s := NewServer("Test", dsMock)
+		s.config = &Config{Endpoint: test.Address}
+
+		clientMock := gopcuaMocks.NewMockClient(t)
+		readResponse := &ua.ReadResponse{
+			Results: []*ua.DataValue{
+				{Value: ua.MustVariant(int32(5))},
 			},
-			want:        []*sdkModel.CommandValue{nil},
-			wantErr:     true,
-			endpointErr: true,
-		},
-		// non-existent resource will have a nil response and be ignored by edgex
-		{
-			name: "OK - non-existent variable",
-			args: args{
-				deviceName: "TestWithFakeVar",
-				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Address},
-				},
-				reqs: []sdkModel.CommandRequest{{
-					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]any{NODE: "ns=2;s=fake"},
-					Type:               common.ValueTypeInt32,
-				}},
+		}
+		clientMock.On("Read", s.context.ctx, mock.Anything).Return(readResponse, nil)
+		clientMock.On("State").Return(opcua.Connected)
+		s.client = &Client{clientMock, s.context.ctx}
+
+		got, err := s.ProcessReadCommands(reqs)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		for i := range got {
+			if got[i] != nil {
+				got[i].Origin = 0
+			}
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Driver.HandleReadCommands() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("OK - read many values from mock server", func(t *testing.T) {
+		reqs := []sdkModel.CommandRequest{{
+			DeviceResourceName: "TestVar1",
+			Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
+			Type:               common.ValueTypeInt32,
+		}, {
+			DeviceResourceName: "TestVar2",
+			Attributes:         map[string]any{NODE: "ns=2;s=ro_bool"},
+			Type:               common.ValueTypeBool,
+		}}
+		want := []*sdkModel.CommandValue{{
+			DeviceResourceName: "TestVar1",
+			Type:               common.ValueTypeInt32,
+			Value:              int32(5),
+			Tags:               make(map[string]string),
+		}, {
+			DeviceResourceName: "TestVar2",
+			Type:               common.ValueTypeBool,
+			Value:              true,
+			Tags:               make(map[string]string),
+		}}
+
+		dsMock := test.NewDSMock(t)
+		s := NewServer("Test", dsMock)
+		s.config = &Config{Endpoint: test.Address}
+
+		clientMock := gopcuaMocks.NewMockClient(t)
+		readResponse := &ua.ReadResponse{
+			Results: []*ua.DataValue{
+				{Value: ua.MustVariant(int32(5))},
+				{Value: ua.MustVariant(true)},
 			},
-			want: make([]*sdkModel.CommandValue, 1),
-		},
-		{
-			name: "NOK - read command - invalid node id",
-			args: args{
-				deviceName: "Test",
-				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Address},
-				},
-				reqs: []sdkModel.CommandRequest{{
-					DeviceResourceName: "TestResource1",
-					Attributes:         map[string]any{NODE: "ns=2;i=22;z=43"},
-					Type:               common.ValueTypeInt32,
-				}},
-			},
-			want:    make([]*sdkModel.CommandValue, 1),
-			wantErr: true,
-		},
-		{
-			name: "NOK - not allowed to call method with reader",
-			args: args{
-				deviceName: "Test",
-				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Address},
-				},
-				reqs: []sdkModel.CommandRequest{{
-					DeviceResourceName: "SquareResource",
-					Attributes:         map[string]any{METHOD: "ns=2;s=square", OBJECT: "ns=2;s=main"},
-					Type:               common.ValueTypeInt64,
-				}},
-			},
-			want:    make([]*sdkModel.CommandValue, 1),
-			wantErr: true,
-		},
-		{
-			name: "OK - read value from mock server",
-			args: args{
-				deviceName: "Test",
-				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Address},
-				},
-				reqs: []sdkModel.CommandRequest{{
-					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
-					Type:               common.ValueTypeInt32,
-				}},
-			},
-			want: []*sdkModel.CommandValue{{
-				DeviceResourceName: "TestVar1",
-				Type:               common.ValueTypeInt32,
-				Value:              int32(5),
-				Tags:               make(map[string]string),
-			}},
-			wantErr: false,
-		},
-		{
-			name: "OK - read many values from mock server",
-			args: args{
-				deviceName: "Test",
-				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Address},
-				},
-				reqs: []sdkModel.CommandRequest{{
-					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
-					Type:               common.ValueTypeInt32,
-				}, {
-					DeviceResourceName: "TestVar2",
-					Attributes:         map[string]any{NODE: "ns=2;s=ro_bool"},
-					Type:               common.ValueTypeBool,
-				}},
-			},
-			want: []*sdkModel.CommandValue{{
-				DeviceResourceName: "TestVar1",
-				Type:               common.ValueTypeInt32,
-				Value:              int32(5),
-				Tags:               make(map[string]string),
-			}, {
-				DeviceResourceName: "TestVar2",
-				Type:               common.ValueTypeBool,
-				Value:              true,
-				Tags:               make(map[string]string),
-			}},
-			wantErr: false,
-		},
-	}
+		}
+		clientMock.On("Read", s.context.ctx, mock.Anything).Return(readResponse, nil)
+		clientMock.On("State").Return(opcua.Connected)
+		s.client = &Client{clientMock, s.context.ctx}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			endpoint := cast.ToString(tt.args.protocols[Protocol][Endpoint])
+		got, err := s.ProcessReadCommands(reqs)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		for i := range got {
+			if got[i] != nil {
+				got[i].Origin = 0
+			}
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("Driver.HandleReadCommands() = %v, want %v", got, want)
+		}
+	})
 
-			dsMock := test.NewDSMock(t)
-			s := NewServer(tt.args.deviceName, dsMock)
-			clientMock := new(test.MockOpcuaClient)
+	t.Run("NOK - error from nil client", func(t *testing.T) {
+		reqs := []sdkModel.CommandRequest{{
+			DeviceResourceName: "TestVar1",
+			Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
+			Type:               common.ValueTypeInt32,
+		}}
+		dsMock := test.NewDSMock(t)
+		dsMock.On("GetDeviceByName", "Test").Return(models.Device{}, fmt.Errorf("error"))
+		s := NewServer("Test", dsMock)
+		s.client = nil
 
-			if endpoint == "" {
-				clientMock.On("Connect", s.context.ctx).Return(fmt.Errorf("error"))
-			} else {
-				clientMock.On("Connect", s.context.ctx).Return(nil)
-			}
+		_, err := s.ProcessReadCommands(reqs)
+		if err == nil {
+			t.Error("expected an error but got none")
+		}
+	})
 
-			readResponse := &ua.ReadResponse{}
-			if tt.args.deviceName != "TestWithFakeVar" {
-				readResponse.Results = []*ua.DataValue{
-					{Value: ua.MustVariant(int32(5))},
-					{Value: ua.MustVariant(true)},
-				}
-			}
-			clientMock.On("Read", s.context.ctx, mock.Anything).Return(readResponse, nil)
-			clientMock.On("State").Return(opcua.Connected)
-			s.config = &Config{Endpoint: endpoint}
+	t.Run("NOK - error from disconnected server", func(t *testing.T) {
+		reqs := []sdkModel.CommandRequest{{
+			DeviceResourceName: "TestVar1",
+			Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
+			Type:               common.ValueTypeInt32,
+		}}
+		dsMock := test.NewDSMock(t)
+		dsMock.On("GetDeviceByName", "Test").Return(models.Device{Protocols: map[string]models.ProtocolProperties{Protocol: {Endpoint: test.Address}}}, nil)
 
-			if tt.nilClient {
-				s.client = nil
-				dsMock.On("GetDeviceByName", tt.args.deviceName).Return(models.Device{Name: tt.args.deviceName, Protocols: tt.args.protocols}, nil)
-			} else if !tt.endpointErr {
-				s.client = &Client{clientMock, s.context.ctx}
-			}
-			got, err := s.ProcessReadCommands(tt.args.reqs)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Driver.HandleReadCommands() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			// Ignore Origin for DeepEqual
-			for i := range got {
-				if got[i] != nil {
-					got[i].Origin = 0
-				}
-			}
+		s := NewServer("Test", dsMock)
 
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Driver.HandleReadCommands() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+		clientMock := gopcuaMocks.NewMockClient(t)
+		clientMock.On("State").Return(opcua.Disconnected)
+		clientMock.On("Connect", mock.Anything).Return(fmt.Errorf("error"))
+		s.client = &Client{clientMock, s.context.ctx}
 
-func TestDriver_ProcessReadCommandsNoServer(t *testing.T) {
-	type args struct {
-		deviceName string
-		protocols  map[string]models.ProtocolProperties
-		reqs       []sdkModel.CommandRequest
-	}
-	tests := []struct {
-		name        string
-		args        args
-		want        []*sdkModel.CommandValue
-		wantErr     bool
-		endpointErr bool
-		nilClient   bool
-	}{
-		{
-			name: "NOK - error from nil client",
-			args: args{
-				deviceName: "Test",
-				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Address},
-				},
-				reqs: []sdkModel.CommandRequest{{
-					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
-					Type:               common.ValueTypeInt32,
-				}},
-			},
-			want:      []*sdkModel.CommandValue{nil},
-			wantErr:   true,
-			nilClient: true,
-		},
-		{
-			name: "NOK - error from disconnected server",
-			args: args{
-				deviceName: "Test",
-				protocols: map[string]models.ProtocolProperties{
-					Protocol: {Endpoint: test.Address},
-				},
-				reqs: []sdkModel.CommandRequest{{
-					DeviceResourceName: "TestVar1",
-					Attributes:         map[string]any{NODE: "ns=2;s=ro_int32"},
-					Type:               common.ValueTypeInt32,
-				}},
-			},
-			want:    []*sdkModel.CommandValue{nil},
-			wantErr: true,
-		},
-	}
+		gopcua.NewClient = func(endpoint string, opts ...opcua.Option) (gopcua.Client, error) {
+			return clientMock, nil
+		}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			dsMock := test.NewDSMock(t)
-			s := NewServer(tt.args.deviceName, dsMock)
-			clientMock := new(test.MockOpcuaClient)
-			clientMock.On("State").Return(opcua.Disconnected)
-			clientMock.On("Connect", s.context.ctx).Return(fmt.Errorf("error"))
-			if tt.nilClient {
-				s.client = nil
-			} else {
-				s.client = &Client{clientMock, s.context.ctx}
-			}
-			dsMock.On("GetDeviceByName", tt.args.deviceName).Return(models.Device{}, fmt.Errorf("error"))
-
-			got, err := s.ProcessReadCommands(tt.args.reqs)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Driver.HandleReadCommands() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			// Ignore Origin for DeepEqual
-			if len(got) > 0 && got[0] != nil {
-				got[0].Origin = 0
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Driver.HandleReadCommands() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+		_, err := s.ProcessReadCommands(reqs)
+		if err == nil {
+			t.Error("expected an error but got none")
+		}
+	})
 }
 
 func TestBuildReadRequest(t *testing.T) {

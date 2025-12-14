@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/edgexfoundry/device-opcua-go/pkg/gopcua"
 	"github.com/edgexfoundry/device-sdk-go/v4/pkg/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/models"
 	"github.com/gopcua/opcua"
@@ -22,24 +23,8 @@ type CancelContext struct {
 	cancel context.CancelFunc
 }
 
-var getEndpoints = opcua.GetEndpoints
-var newOpcuaClient = func(endpoint string, opts ...opcua.Option) (opcuaClient, error) {
-	return opcua.NewClient(endpoint, opts...)
-}
-
-// opcuaClient is an interface for opcua.Client to allow for mocking
-type opcuaClient interface {
-	Connect(ctx context.Context) error
-	Close(ctx context.Context) error
-	Call(ctx context.Context, req *ua.CallMethodRequest) (*ua.CallMethodResult, error)
-	Read(ctx context.Context, req *ua.ReadRequest) (*ua.ReadResponse, error)
-	Write(ctx context.Context, req *ua.WriteRequest) (*ua.WriteResponse, error)
-	Subscribe(ctx context.Context, params *opcua.SubscriptionParameters, notifyCh chan<- *opcua.PublishNotificationData) (*opcua.Subscription, error)
-	State() opcua.ConnState
-}
-
 type Client struct {
-	opcuaClient
+	gopcua.Client
 	ctx context.Context
 }
 
@@ -126,7 +111,7 @@ func (s *Server) newContext() {
 
 func (s *Server) initClient() error {
 
-	endpoints, err := getEndpoints(s.context.ctx, s.config.Endpoint)
+	endpoints, err := gopcua.GetEndpoints(s.context.ctx, s.config.Endpoint)
 	if err != nil {
 		return err
 	}
@@ -147,7 +132,7 @@ func (s *Server) initClient() error {
 		opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeAnonymous),
 	}
 
-	client, err := newOpcuaClient(ep.EndpointURL, opts...)
+	client, err := gopcua.NewClient(ep.EndpointURL, opts...)
 	if err != nil {
 		return err
 	}
