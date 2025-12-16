@@ -66,7 +66,7 @@ vendor:
 .PHONY: get-go-licenses attributions
 
 get-go-licenses:
-	@go install github.com/google/go-licenses/v2@latest
+	@GOBIN=$(GOBIN) go install github.com/google/go-licenses/v2@latest
 
 # -tags required to resolve inherited dependencies in go.mod that require certain build flags
 attributions: get-go-licenses
@@ -80,4 +80,4 @@ attributions: get-go-licenses
 .PHONY: install-mockery
 
 install-mockery:
-	@go install github.com/vektra/mockery/v3@v3.6.1
+	@GOBIN=$(GOBIN) go install github.com/vektra/mockery/v3@v3.6.1
