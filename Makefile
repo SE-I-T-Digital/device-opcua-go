@@ -66,7 +66,7 @@ vendor:
 .PHONY: get-go-licenses attributions
 
 get-go-licenses:
-	@go install github.com/google/go-licenses/v2@latest
+	@GOBIN=$(GOBIN) go install github.com/google/go-licenses/v2@latest
 
 # -tags required to resolve inherited dependencies in go.mod that require certain build flags
 attributions: get-go-licenses
@@ -76,3 +76,8 @@ attributions: get-go-licenses
 		--template bin/attributions.template > Attribution.txt
 	@echo "\nChecking generated Attribution.txt file for missing entries...\n"
 	@./bin/test-attribution-txt.sh
+
+.PHONY: install-mockery
+
+install-mockery:
+	@GOBIN=$(GOBIN) go install github.com/vektra/mockery/v3@v3.6.1

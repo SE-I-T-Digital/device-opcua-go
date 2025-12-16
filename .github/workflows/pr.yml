@@ -59,6 +59,8 @@ jobs:
       - name: Run unit tests
         run: |
           make install-lint
+          make install-mockery
+          mockery
           make test >> test-results.txt
       - name: Publish results to summary
         if: always()

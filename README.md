@@ -259,9 +259,14 @@ See [Compose Builder](https://github.com/edgexfoundry/edgex-compose/tree/main/co
 
 ## Testing
 
-Unit tests can be run with the following command:
+Unit tests can be run with the following commands:
 
 ```bash
+# Required once
+make install-mockery
+# Required if any interface in pkg/gopcua changes
+mockery
+# Run tests
 make test
 ```
 

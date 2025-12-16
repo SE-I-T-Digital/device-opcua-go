@@ -7,15 +7,15 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
 	"github.com/edgexfoundry/device-opcua-go/internal/test"
+	"github.com/edgexfoundry/device-opcua-go/pkg/gopcua"
+	gopcuaMocks "github.com/edgexfoundry/device-opcua-go/pkg/gopcua/mocks"
 	"github.com/edgexfoundry/device-sdk-go/v4/pkg/interfaces/mocks"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/models"
 	"github.com/gopcua/opcua"
-	"github.com/gopcua/opcua/ua"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -78,19 +78,14 @@ func TestServer_Connect(t *testing.T) {
 		},
 	}
 
-	origGetEndpoints := getEndpoints
-	defer func() { getEndpoints = origGetEndpoints }()
-	getEndpoints = func(ctx context.Context, endpointURL string, opts ...opcua.Option) ([]*ua.EndpointDescription, error) {
-		if endpointURL == test.Address {
-			return []*ua.EndpointDescription{{SecurityPolicyURI: ua.SecurityPolicyURINone, SecurityMode: ua.MessageSecurityModeNone}}, nil
-		}
-		return nil, fmt.Errorf("bad endpoint")
-	}
+	origGetEndpoints := gopcua.GetEndpoints
+	defer func() { gopcua.GetEndpoints = origGetEndpoints }()
+	test.MockGetEndpoints()
 
-	mockClient := new(test.MockOpcuaClient)
-	origNewOpcuaClient := newOpcuaClient
-	defer func() { newOpcuaClient = origNewOpcuaClient }()
-	newOpcuaClient = func(endpoint string, opts ...opcua.Option) (opcuaClient, error) {
+	mockClient := gopcuaMocks.NewMockClient(t)
+	origNewOpcuaClient := gopcua.NewClient
+	defer func() { gopcua.NewClient = origNewOpcuaClient }()
+	gopcua.NewClient = func(endpoint string, opts ...opcua.Option) (gopcua.Client, error) {
 		return mockClient, nil
 	}
 

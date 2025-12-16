@@ -7,13 +7,12 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
 	"github.com/edgexfoundry/device-opcua-go/internal/test"
+	"github.com/edgexfoundry/device-opcua-go/pkg/gopcua"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/models"
-	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
 )
 
@@ -80,14 +79,9 @@ func TestDriver_initClient(t *testing.T) {
 		},
 	}
 
-	origGetEndpoints := getEndpoints
-	defer func() { getEndpoints = origGetEndpoints }()
-	getEndpoints = func(ctx context.Context, endpointURL string, opts ...opcua.Option) ([]*ua.EndpointDescription, error) {
-		if endpointURL == test.Address {
-			return []*ua.EndpointDescription{{SecurityPolicyURI: ua.SecurityPolicyURINone, SecurityMode: ua.MessageSecurityModeNone}}, nil
-		}
-		return nil, fmt.Errorf("bad endpoint")
-	}
+	origGetEndpoints := gopcua.GetEndpoints
+	defer func() { gopcua.GetEndpoints = origGetEndpoints }()
+	test.MockGetEndpoints()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/edgexfoundry/device-opcua-go/pkg/gopcua"
 	"github.com/edgexfoundry/device-sdk-go/v4/pkg/interfaces/mocks"
 	"github.com/edgexfoundry/device-sdk-go/v4/pkg/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
@@ -45,54 +46,11 @@ func (r *ResponseWriterMock) WriteHeader(statusCode int) {
 	fmt.Printf("StatusCode=%d", statusCode)
 }
 
-// MockOpcuaClient is a mock of the opcuaClient interface
-type MockOpcuaClient struct {
-	mock.Mock
-}
-
-func (m *MockOpcuaClient) Connect(ctx context.Context) error {
-	args := m.Called(ctx)
-	return args.Error(0)
-}
-
-func (m *MockOpcuaClient) Close(ctx context.Context) error {
-	args := m.Called(ctx)
-	return args.Error(0)
-}
-
-func (m *MockOpcuaClient) Call(ctx context.Context, req *ua.CallMethodRequest) (*ua.CallMethodResult, error) {
-	args := m.Called(ctx, req)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
+func MockGetEndpoints() {
+	gopcua.GetEndpoints = func(ctx context.Context, endpointURL string, opts ...opcua.Option) ([]*ua.EndpointDescription, error) {
+		if endpointURL == Address {
+			return []*ua.EndpointDescription{{SecurityPolicyURI: ua.SecurityPolicyURINone, SecurityMode: ua.MessageSecurityModeNone}}, nil
+		}
+		return nil, fmt.Errorf("bad endpoint")
 	}
-	return args.Get(0).(*ua.CallMethodResult), args.Error(1)
-}
-
-func (m *MockOpcuaClient) Read(ctx context.Context, req *ua.ReadRequest) (*ua.ReadResponse, error) {
-	args := m.Called(ctx, req)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*ua.ReadResponse), args.Error(1)
-}
-
-func (m *MockOpcuaClient) Write(ctx context.Context, req *ua.WriteRequest) (*ua.WriteResponse, error) {
-	args := m.Called(ctx, req)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*ua.WriteResponse), args.Error(1)
-}
-
-func (m *MockOpcuaClient) Subscribe(ctx context.Context, params *opcua.SubscriptionParameters, notifyCh chan<- *opcua.PublishNotificationData) (*opcua.Subscription, error) {
-	args := m.Called(ctx, params, notifyCh)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*opcua.Subscription), args.Error(1)
-}
-
-func (m *MockOpcuaClient) State() opcua.ConnState {
-	args := m.Called()
-	return args.Get(0).(opcua.ConnState)
 }
