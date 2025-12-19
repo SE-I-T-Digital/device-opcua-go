@@ -90,6 +90,66 @@ func NewResult(req sdkModel.CommandRequest, reading any) (*sdkModel.CommandValue
 		if err != nil {
 			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
 		}
+	case common.ValueTypeBoolArray:
+		val, err = cast.ToBoolSliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeStringArray:
+		val, err = cast.ToStringSliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeUint8Array:
+		val, err = cast.ToUint8SliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeUint16Array:
+		val, err = cast.ToUint16SliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeUint32Array:
+		val, err = cast.ToUint32SliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeUint64Array:
+		val, err = cast.ToUint64SliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeInt8Array:
+		val, err = cast.ToInt8SliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeInt16Array:
+		val, err = cast.ToInt16SliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeInt32Array:
+		val, err = cast.ToInt32SliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeInt64Array:
+		val, err = cast.ToInt64SliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeFloat32Array:
+		val, err = cast.ToFloat32SliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
+	case common.ValueTypeFloat64Array:
+		val, err = cast.ToFloat64SliceE(reading)
+		if err != nil {
+			return nil, fmt.Errorf(castError, req.DeviceResourceName, err)
+		}
 	default:
 		err = fmt.Errorf("return result fail, none supported value type: %v", req.Type)
 		return nil, err

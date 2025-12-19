@@ -111,6 +111,77 @@ func Test_newCommandValue(t *testing.T) {
 			want:    float64(5),
 			wantErr: false,
 		},
+		{
+			name:    "OK - bool array value",
+			args:    args{valueType: common.ValueTypeBoolArray, param: &sdkModel.CommandValue{Value: []bool{true, false}, Type: common.ValueTypeBoolArray}},
+			want:    []bool{true, false},
+			wantErr: false,
+		},
+		{
+			name:    "OK - string array value",
+			args:    args{valueType: common.ValueTypeStringArray, param: &sdkModel.CommandValue{Value: []string{"a", "b"}, Type: common.ValueTypeStringArray}},
+			want:    []string{"a", "b"},
+			wantErr: false,
+		},
+		{
+			name:    "OK - uint8 array value",
+			args:    args{valueType: common.ValueTypeUint8Array, param: &sdkModel.CommandValue{Value: []uint8{1, 2}, Type: common.ValueTypeUint8Array}},
+			want:    []uint8{1, 2},
+			wantErr: false,
+		},
+		{
+			name:    "OK - uint16 array value",
+			args:    args{valueType: common.ValueTypeUint16Array, param: &sdkModel.CommandValue{Value: []uint16{1, 2}, Type: common.ValueTypeUint16Array}},
+			want:    []uint16{1, 2},
+			wantErr: false,
+		},
+		{
+			name:    "OK - uint32 array value",
+			args:    args{valueType: common.ValueTypeUint32Array, param: &sdkModel.CommandValue{Value: []uint32{1, 2}, Type: common.ValueTypeUint32Array}},
+			want:    []uint32{1, 2},
+			wantErr: false,
+		},
+		{
+			name:    "OK - uint64 array value",
+			args:    args{valueType: common.ValueTypeUint64Array, param: &sdkModel.CommandValue{Value: []uint64{1, 2}, Type: common.ValueTypeUint64Array}},
+			want:    []uint64{1, 2},
+			wantErr: false,
+		}, {
+			name:    "OK - int8 array value",
+			args:    args{valueType: common.ValueTypeInt8Array, param: &sdkModel.CommandValue{Value: []int8{1, 2}, Type: common.ValueTypeInt8Array}},
+			want:    []int8{1, 2},
+			wantErr: false,
+		},
+		{
+			name:    "OK - int16 array value",
+			args:    args{valueType: common.ValueTypeInt16Array, param: &sdkModel.CommandValue{Value: []int16{1, 2}, Type: common.ValueTypeInt16Array}},
+			want:    []int16{1, 2},
+			wantErr: false,
+		},
+		{
+			name:    "OK - int32 array value",
+			args:    args{valueType: common.ValueTypeInt32Array, param: &sdkModel.CommandValue{Value: []int32{1, 2}, Type: common.ValueTypeInt32Array}},
+			want:    []int32{1, 2},
+			wantErr: false,
+		},
+		{
+			name:    "OK - int64 array value",
+			args:    args{valueType: common.ValueTypeInt64Array, param: &sdkModel.CommandValue{Value: []int64{1, 2}, Type: common.ValueTypeInt64Array}},
+			want:    []int64{1, 2},
+			wantErr: false,
+		},
+		{
+			name:    "OK - float32 array value",
+			args:    args{valueType: common.ValueTypeFloat32Array, param: &sdkModel.CommandValue{Value: []float32{1.1, 2.2}, Type: common.ValueTypeFloat32Array}},
+			want:    []float32{1.1, 2.2},
+			wantErr: false,
+		},
+		{
+			name:    "OK - float64 array value",
+			args:    args{valueType: common.ValueTypeFloat64Array, param: &sdkModel.CommandValue{Value: []float64{1.1, 2.2}, Type: common.ValueTypeFloat64Array}},
+			want:    []float64{1.1, 2.2},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
