@@ -1,10 +1,10 @@
 #
 # Copyright (c) 2018, 2019 Intel
-# Copyright (c) 2021-2025 Schneider Electric
+# Copyright (c) 2021-2026 Schneider Electric
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM golang:1.24-alpine3.21@sha256:59a9237590705e00dd04bb43f9f75562caced1393b8767b4666a658daeb93e61 AS builder
+FROM golang:1.24-alpine3.22@sha256:40d22b0a80c91066605c64848a69cb366a50f1c2e47faf2558d23c0165d18f32 AS builder
 WORKDIR /device-opcua-go
 
 # Install our build time packages.
@@ -23,7 +23,7 @@ ARG ADD_BUILD_TAGS=""
 RUN make -e ADD_BUILD_TAGS="$ADD_BUILD_TAGS" build
 
 # Next image - Copy built Go binary into new workspace
-FROM alpine:3.21.5@sha256:5405e8f36ce1878720f71217d664aa3dea32e5e5df11acbf07fc78ef5661465b
+FROM alpine:3.22.3@sha256:55ae5d250caebc548793f321534bc6a8ef1d116f334f18f4ada1b2daad3251b2
 
 # dumb-init needed for injected secure bootstrapping entrypoint script when run in secure mode.
 # upgrade required to patch for open CVEs.
