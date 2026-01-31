@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM golang:1.24-alpine3.22@sha256:40d22b0a80c91066605c64848a69cb366a50f1c2e47faf2558d23c0165d18f32 AS builder
+FROM golang:1.25-alpine3.22@sha256:fa3380ab0d73b706e6b07d2a306a4dc68f20bfc1437a6a6c47c8f88fe4af6f75 AS builder
 WORKDIR /device-opcua-go
 
 # Install our build time packages.
