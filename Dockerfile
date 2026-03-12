@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM golang:1.26-alpine3.22@sha256:169d3991a4f795124a88b33c73549955a3d856e26e8504b5530c30bd245f9f1b AS builder
+FROM golang:1.26-alpine3.23@sha256:2389ebfa5b7f43eeafbd6be0c3700cc46690ef842ad962f6c5bd6be49ed82039 AS builder
 WORKDIR /device-opcua-go
 
 # Install our build time packages.
@@ -28,7 +28,7 @@ FROM alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f
 # dumb-init needed for injected secure bootstrapping entrypoint script when run in secure mode.
 # upgrade required to patch for open CVEs.
 RUN apk add --update --no-cache dumb-init=1.2.5-r3 && \
-  apk upgrade busybox libcrypto3 libssl3 && \
+  apk upgrade busybox libcrypto3 libssl3 zlib && \
   rm -rf /var/cache/apk/*
 
 # expose command data port
