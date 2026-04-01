@@ -101,7 +101,7 @@ func (s *Server) Cleanup(recreateContext bool) {
 
 func (s *Server) newContext() {
 	ctxbg := context.Background()
-	ctx, cancel := context.WithCancel(ctxbg)
+	ctx, cancel := context.WithCancel(ctxbg) // nolint:gosec
 
 	s.context = &CancelContext{
 		ctx:    ctx,
