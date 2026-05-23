@@ -6,15 +6,36 @@ updates:
     schedule:
       interval: "weekly"
       day: "wednesday"
+    cooldown:
+      default-days: 14
+    groups:
+      edgex-foundry-dependencies:
+        applies-to: version-updates
+        patterns:
+          - github.com/edgexfoundry/*
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "wednesday"
+    cooldown:
+      default-days: 14
+    groups:
+      actions-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
   # Maintain Docker base images
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "wednesday"
+    cooldown:
+      default-days: 14
+    groups:
+      docker-base-images:
+        applies-to: version-updates
+        patterns:
+          - "*"
