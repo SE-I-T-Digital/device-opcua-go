@@ -25,7 +25,15 @@ updates:
       actions-dependencies:
         applies-to: version-updates
         patterns:
-          - "*"
+          - actions/*
+      docker-dependencies:
+        applies-to: version-updates
+        patterns:
+          - docker/*
+      security-dependencies:
+        applies-to: version-updates
+        patterns:
+          - aquasecurity/*
   # Maintain Docker base images
   - package-ecosystem: "docker"
     directory: "/"
