@@ -15,7 +15,7 @@ COPY go.* ./
 RUN [ ! -d "vendor" ] && go mod download all || echo "skipping..."
 
 ADD cmd cmd
-ADD internal internal 
+ADD internal internal
 ADD pkg pkg
 COPY version.go Makefile ./
 
@@ -27,7 +27,7 @@ FROM alpine:3.24.0@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acae
 
 # dumb-init needed for injected secure bootstrapping entrypoint script when run in secure mode.
 # upgrade required to patch for open CVEs.
-RUN apk add --update --no-cache dumb-init=1.2.5-r3 && \
+RUN apk add --update --no-cache dumb-init=1.2.5-r4 && \
   apk upgrade busybox libcrypto3 libssl3 zlib && \
   rm -rf /var/cache/apk/*
 
