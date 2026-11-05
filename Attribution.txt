@@ -10,9 +10,6 @@ https://github.com/cenkalti/backoff/blob/v4.3.0/LICENSE
 github.com/cespare/xxhash/v2 (MIT)
 https://github.com/cespare/xxhash/blob/v2.3.0/LICENSE.txt
 
-github.com/davecgh/go-spew/spew (ISC)
-https://github.com/davecgh/go-spew/blob/d8f796af33cc/LICENSE
-
 github.com/eclipse/paho.mqtt.golang (EPL-2.0)
 https://github.com/eclipse/paho.mqtt.golang/blob/v1.5.1/LICENSE
 
@@ -53,13 +50,13 @@ github.com/fxamacker/cbor/v2 (MIT)
 https://github.com/fxamacker/cbor/blob/v2.9.2/LICENSE
 
 github.com/gabriel-vasile/mimetype (MIT)
-https://github.com/gabriel-vasile/mimetype/blob/v1.4.13/LICENSE
+https://github.com/gabriel-vasile/mimetype/blob/v1.4.16/LICENSE
 
 github.com/go-jose/go-jose/v4 (Apache-2.0)
-https://github.com/go-jose/go-jose/blob/v4.1.4/LICENSE
+https://github.com/go-jose/go-jose/blob/v4.1.8/LICENSE
 
 github.com/go-jose/go-jose/v4/json (BSD-3-Clause)
-https://github.com/go-jose/go-jose/blob/v4.1.4/json/LICENSE
+https://github.com/go-jose/go-jose/blob/v4.1.8/json/LICENSE
 
 github.com/go-kit/log (MIT)
 https://github.com/go-kit/log/blob/v0.2.1/LICENSE
@@ -143,13 +140,13 @@ github.com/go-openapi/validate (Apache-2.0)
 https://github.com/go-openapi/validate/blob/v0.25.2/LICENSE
 
 github.com/go-playground/locales (MIT)
-https://github.com/go-playground/locales/blob/v0.14.1/LICENSE
+https://github.com/go-playground/locales/blob/v0.14.2/LICENSE
 
 github.com/go-playground/universal-translator (MIT)
-https://github.com/go-playground/universal-translator/blob/v0.18.1/LICENSE
+https://github.com/go-playground/universal-translator/blob/v0.18.2/LICENSE
 
 github.com/go-playground/validator/v10 (MIT)
-https://github.com/go-playground/validator/blob/v10.30.2/LICENSE
+https://github.com/go-playground/validator/blob/v10.30.6/LICENSE
 
 github.com/go-resty/resty/v2 (MIT)
 https://github.com/go-resty/resty/blob/v2.17.2/LICENSE
@@ -182,22 +179,22 @@ github.com/kataras/go-events (MIT)
 https://github.com/kataras/go-events/blob/v0.0.3/LICENSE
 
 github.com/klauspost/compress (MIT)
-https://github.com/klauspost/compress/blob/v1.18.5/LICENSE
+https://github.com/klauspost/compress/blob/v1.20.3/LICENSE
 
 github.com/klauspost/compress (Apache-2.0)
-https://github.com/klauspost/compress/blob/v1.18.5/LICENSE
+https://github.com/klauspost/compress/blob/v1.20.3/LICENSE
 
 github.com/klauspost/compress (BSD-3-Clause)
-https://github.com/klauspost/compress/blob/v1.18.5/LICENSE
+https://github.com/klauspost/compress/blob/v1.20.3/LICENSE
 
 github.com/labstack/echo/v4 (MIT)
-https://github.com/labstack/echo/blob/v4.15.4/LICENSE
+https://github.com/labstack/echo/blob/v4.16.3/LICENSE
 
 github.com/labstack/gommon (MIT)
 https://github.com/labstack/gommon/blob/v0.5.0/LICENSE
 
 github.com/leodido/go-urn (MIT)
-https://github.com/leodido/go-urn/blob/v1.4.0/LICENSE
+https://github.com/leodido/go-urn/blob/v1.5.0/LICENSE
 
 github.com/lufia/plan9stats (BSD-3-Clause)
 https://github.com/lufia/plan9stats/blob/39d0f177ccd0/LICENSE
@@ -283,9 +280,6 @@ https://github.com/parallaxsecond/parsec-client-go/blob/f0a77d263cf9/LICENSE
 github.com/pkg/errors (BSD-2-Clause)
 https://github.com/pkg/errors/blob/v0.9.1/LICENSE
 
-github.com/pmezard/go-difflib/difflib (BSD-3-Clause)
-https://github.com/pmezard/go-difflib/blob/5d4384ee4fb2/LICENSE
-
 github.com/power-devops/perfstat (MIT)
 https://github.com/power-devops/perfstat/blob/5aafc221ea8c/LICENSE
 
@@ -308,13 +302,19 @@ github.com/spf13/cast (MIT)
 https://github.com/spf13/cast/blob/v1.10.0/LICENSE
 
 github.com/spiffe/go-spiffe/v2 (Apache-2.0)
-https://github.com/spiffe/go-spiffe/blob/v2.6.0/LICENSE
+https://github.com/spiffe/go-spiffe/blob/v2.7.0/LICENSE
 
 github.com/stretchr/objx (MIT)
-https://github.com/stretchr/objx/blob/v0.5.2/LICENSE
+https://github.com/stretchr/objx/blob/v0.5.3/LICENSE
 
 github.com/stretchr/testify (MIT)
-https://github.com/stretchr/testify/blob/v1.11.1/LICENSE
+https://github.com/stretchr/testify/blob/v1.12.1/LICENSE
+
+github.com/stretchr/testify/internal/difflib (BSD-3-Clause)
+https://github.com/stretchr/testify/blob/v1.12.1/internal/difflib/LICENSE
+
+github.com/stretchr/testify/internal/spew (ISC)
+https://github.com/stretchr/testify/blob/v1.12.1/internal/spew/LICENSE
 
 github.com/tklauser/go-sysconf (BSD-3-Clause)
 https://github.com/tklauser/go-sysconf/blob/v0.3.12/LICENSE
@@ -350,52 +350,52 @@ go.opentelemetry.io/auto/sdk (Apache-2.0)
 https://github.com/open-telemetry/opentelemetry-go-instrumentation/blob/sdk/v1.2.1/sdk/LICENSE
 
 go.opentelemetry.io/otel (Apache-2.0)
-https://github.com/open-telemetry/opentelemetry-go/blob/v1.41.0/LICENSE
+https://github.com/open-telemetry/opentelemetry-go/blob/v1.44.0/LICENSE
 
 go.opentelemetry.io/otel (BSD-3-Clause)
-https://github.com/open-telemetry/opentelemetry-go/blob/v1.41.0/LICENSE
+https://github.com/open-telemetry/opentelemetry-go/blob/v1.44.0/LICENSE
 
 go.opentelemetry.io/otel/metric (Apache-2.0)
-https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.41.0/metric/LICENSE
+https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.44.0/metric/LICENSE
 
 go.opentelemetry.io/otel/metric (BSD-3-Clause)
-https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.41.0/metric/LICENSE
+https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.44.0/metric/LICENSE
 
 go.opentelemetry.io/otel/trace (Apache-2.0)
-https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.41.0/trace/LICENSE
+https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.44.0/trace/LICENSE
 
 go.opentelemetry.io/otel/trace (BSD-3-Clause)
-https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.41.0/trace/LICENSE
+https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.44.0/trace/LICENSE
 
 go.yaml.in/yaml/v3 (MIT)
-https://github.com/yaml/go-yaml/blob/v3.0.4/LICENSE
+https://github.com/yaml/go-yaml/blob/v3.0.5/LICENSE
 
 golang.org/x/crypto (BSD-3-Clause)
-https://cs.opensource.google/go/x/crypto/+/v0.53.0:LICENSE
+https://cs.opensource.google/go/x/crypto/+/v0.58.0:LICENSE
 
 golang.org/x/net (BSD-3-Clause)
-https://cs.opensource.google/go/x/net/+/v0.56.0:LICENSE
+https://cs.opensource.google/go/x/net/+/v0.60.0:LICENSE
 
 golang.org/x/oauth2 (BSD-3-Clause)
 https://cs.opensource.google/go/x/oauth2/+/v0.36.0:LICENSE
 
 golang.org/x/sync (BSD-3-Clause)
-https://cs.opensource.google/go/x/sync/+/v0.21.0:LICENSE
+https://cs.opensource.google/go/x/sync/+/v0.24.0:LICENSE
 
 golang.org/x/sys (BSD-3-Clause)
-https://cs.opensource.google/go/x/sys/+/v0.46.0:LICENSE
+https://cs.opensource.google/go/x/sys/+/v0.49.0:LICENSE
 
 golang.org/x/term (BSD-3-Clause)
-https://cs.opensource.google/go/x/term/+/v0.44.0:LICENSE
+https://cs.opensource.google/go/x/term/+/v0.47.0:LICENSE
 
 golang.org/x/text (BSD-3-Clause)
-https://cs.opensource.google/go/x/text/+/v0.38.0:LICENSE
+https://cs.opensource.google/go/x/text/+/v0.43.0:LICENSE
 
 google.golang.org/genproto/googleapis/rpc/status (Apache-2.0)
-https://github.com/googleapis/go-genproto/blob/ff82c1b0f217/googleapis/rpc/LICENSE
+https://github.com/googleapis/go-genproto/blob/3dc84a4a5aaa/googleapis/rpc/LICENSE
 
 google.golang.org/grpc (Apache-2.0)
-https://github.com/grpc/grpc-go/blob/v1.79.3/LICENSE
+https://github.com/grpc/grpc-go/blob/v1.83.2/LICENSE
 
 google.golang.org/protobuf (BSD-3-Clause)
 https://github.com/protocolbuffers/protobuf-go/blob/v1.36.11/LICENSE
